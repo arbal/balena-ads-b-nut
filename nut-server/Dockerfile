@@ -1,10 +1,23 @@
-FROM linuxserver/nuthq:latest
+FROM alpine:3.20
 
-# Set environment variables for NUT
-ENV TZ=UTC
+RUN apk add --no-cache \
+    nut \
+    nut-server \
+    nut-client \
+    tini
 
-# NUT listens on port 3493 by default
+# Create NUT runtime directories
+RUN mkdir -p /var/run/nut /etc/nut && \
+    chown -R root:root /var/run/nut /etc/nut && \
+    chmod 755 /var/run/nut /etc/nut
+
+# Expose NUT port
 EXPOSE 3493
 
-# The linuxserver/nuthq image handles the startup, config, and UPS monitoring
-# No additional configuration needed for basic deployment
+# Basic NUT config - upsd listens on all interfaces
+RUN echo 'LISTEN 0.0.0.0 3493' > /etc/nut/upsd.conf && \
+    echo 'LISTEN :: 3493' >> /etc/nut/upsd.conf && \
+    echo 'MODE master' >> /etc/nut/nutdrv_qx.conf
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["upsd", "-D"]
