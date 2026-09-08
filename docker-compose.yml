@@ -464,18 +464,21 @@ services:
     build: ./nut-server
     image: nut-server
     restart: unless-stopped
-    container_name: nut-server
     ports:
       - "3493:3493"
     devices:
       - /dev/bus/usb:/dev/bus/usb
     volumes:
-      - nut-config:/config
+      - nut-config:/etc/nut
       - nut-run:/var/run/nut
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=UTC
+      - NUT_UPS_NAME=cyberpowerups
+      - NUT_UPS_DRIVER=usbhid-ups
+      - NUT_UPS_PORT=auto
+      - NUT_ADMIN_USER=admin
+      - NUT_ADMIN_PASSWORD=
+      - NUT_MONITOR_USER=monuser
+      - NUT_MONITOR_PASSWORD=
     cap_add:
       - SYS_RAWIO
     labels:
