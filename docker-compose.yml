@@ -8,6 +8,8 @@ volumes:
   tar1090-log:
   aircraft-data:
   tailscale-state:
+  nut-config:
+  nut-run:
 services:
   kiosk:
     restart: unless-stopped
@@ -456,5 +458,25 @@ services:
       - DUMP1090_EXPORTER_LOG_LEVEL=info
     volumes:
       - 'aircraft-data:/run/dump1090-fa:ro'
+    labels:
+      io.balena.features.supervisor-api: '1'
+  nut-server:
+    build: ./nut-server
+    image: nut-server
+    restart: unless-stopped
+    container_name: nut-server
+    ports:
+      - "3493:3493"
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    volumes:
+      - nut-config:/config
+      - nut-run:/var/run/nut
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+    cap_add:
+      - SYS_RAWIO
     labels:
       io.balena.features.supervisor-api: '1'
