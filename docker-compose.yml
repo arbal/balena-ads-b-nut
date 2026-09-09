@@ -313,6 +313,11 @@ services:
     restart: unless-stopped
     tmpfs:
       - /tmp/work
+    environment:
+      # Track balena's recommended balenaOS release and the newest available
+      # supervisor release automatically, including future major versions.
+      - HUP_TARGET_VERSION=recommended
+      - SUPERVISOR_TARGET_VERSION=latest
     labels:
       io.balena.features.balena-api: '1'
       io.balena.features.supervisor-api: '1'
