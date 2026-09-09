@@ -18,12 +18,23 @@ cat > /etc/nut/nut.conf <<EOF
 MODE=standalone
 EOF
 
-# ups.conf - defines the UPS section for the driver to use
+# ups.conf - defines the UPS section for the driver to use.
+#
+# user = root: the usbhid-ups driver setuid()s to the "nut" system user by
+# default before opening the USB device. Linux drops ALL capabilities
+# (including CAP_DAC_OVERRIDE, which `privileged: true` grants) across a
+# setuid() call unless explicitly preserved — so even in a privileged
+# container, the driver ends up as the unprivileged "nut" user trying to
+# open a root-owned /dev/bus/usb/*/* node, failing with "insufficient
+# permissions on everything". Telling the driver to stay root avoids the
+# setuid entirely; upsd (the network-facing daemon) still drops to "nut"
+# separately and is unaffected by this setting.
 cat > /etc/nut/ups.conf <<EOF
 [${NUT_UPS_NAME}]
 	driver = ${NUT_UPS_DRIVER}
 	port = ${NUT_UPS_PORT}
 	desc = "CyberPower UPS"
+	user = root
 EOF
 
 # upsd.conf - listen on all interfaces so other containers/hosts can query
