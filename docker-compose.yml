@@ -464,6 +464,13 @@ services:
     build: ./nut-server
     image: nut-server
     restart: unless-stopped
+    # privileged is required for usbhid-ups to access the UPS's USB HID
+    # device node. A plain `devices:` bind-mount is not sufficient — Docker's
+    # cgroup device whitelist still blocks access to USB's dynamic
+    # major:minor nodes for unprivileged containers, regardless of cap_add.
+    # Same requirement as dump1090-fa/dump978-fa/wingbits in this repo for
+    # their SDR USB devices.
+    privileged: true
     ports:
       - "3493:3493"
     devices:
@@ -479,7 +486,5 @@ services:
       - NUT_ADMIN_PASSWORD=
       - NUT_MONITOR_USER=monuser
       - NUT_MONITOR_PASSWORD=
-    cap_add:
-      - SYS_RAWIO
     labels:
       io.balena.features.supervisor-api: '1'
