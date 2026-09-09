@@ -61,5 +61,13 @@ echo "Starting UPS driver (${NUT_UPS_DRIVER}) for ${NUT_UPS_NAME}..."
 /lib/nut/${NUT_UPS_DRIVER} -a "${NUT_UPS_NAME}" || echo "Driver start returned non-zero — will retry via upsdrvctl"
 /sbin/upsdrvctl start || true
 
+# -u root: the driver (above) runs as root so it can open the raw USB HID
+# device; it then owns the Unix socket it creates in /run/nut and NUT's
+# own automatic group-access fixup for that socket isn't succeeding in
+# this environment ("Needed to fix group access... failed" -> upsd's
+# "Can't connect... Permission denied"). Keeping upsd as root too sidesteps
+# the cross-user socket handoff entirely. This container is single-purpose
+# and already isolated by balena, so running as root here is a reasonable
+# simplification rather than fighting NUT's privilege-separation internals.
 echo "Starting upsd on 0.0.0.0:3493..."
-exec /sbin/upsd -D
+exec /sbin/upsd -D -u root
