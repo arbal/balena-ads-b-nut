@@ -4,7 +4,14 @@ set -e
 echo "Configuring NUT (Network UPS Tools)..."
 
 mkdir -p /etc/nut /var/run/nut
-chown -R root:root /etc/nut /var/run/nut 2>/dev/null || true
+
+# upsd/drivers drop privileges to the "nut" system user (created by the
+# nut-server/nut-client debian packages) and chdir into /var/run/nut as
+# that user — the directory must be owned by nut:nut, not root:root, or
+# upsd fails immediately with "Can't chdir to /run/nut: Permission denied".
+chown -R nut:nut /var/run/nut
+chmod 750 /var/run/nut
+chown -R root:nut /etc/nut
 
 # nut.conf - standalone mode (this container both drives and serves the UPS)
 cat > /etc/nut/nut.conf <<EOF
