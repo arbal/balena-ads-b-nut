@@ -493,3 +493,19 @@ services:
       - NUT_MONITOR_PASSWORD=
     labels:
       io.balena.features.supervisor-api: '1'
+  nut-exporter:
+    depends_on:
+      - nut-server
+    build: ./nut-exporter
+    image: nut-exporter
+    restart: unless-stopped
+    ports:
+      - "9199:9199"
+    environment:
+      # nut-server's upsd permits anonymous LIST VAR / GET VAR reads by
+      # default (confirmed live) — no NUT_EXPORTER_USERNAME/PASSWORD
+      # needed for read-only metrics scraping.
+      - NUT_EXPORTER_SERVER=nut-server
+      - NUT_EXPORTER_SERVERPORT=3493
+    labels:
+      io.balena.features.supervisor-api: '1'

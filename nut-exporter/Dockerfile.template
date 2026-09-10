@@ -1,0 +1,4 @@
+# renovate: datasource=docker depName=druggeri/nut_exporter versioning=docker
+ARG NUT_EXPORTER_VERSION=3.3.0
+FROM druggeri/nut_exporter:${NUT_EXPORTER_VERSION}
+LABEL maintainer="https://github.com/arbal"
