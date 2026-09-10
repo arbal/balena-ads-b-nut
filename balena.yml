@@ -11,7 +11,7 @@ assets:
   repository:
     type: "blob.asset"
     data:
-      url: "https://github.com/ketilmo/balena-ads-b"
+      url: "https://github.com/arbal/balena-ads-b-nut"
   logo:
     type: "blob.asset"
     data:
