@@ -62,7 +62,7 @@ services:
       - LAT=
       - LON=
     devices:
-      - "/dev/bus/usb"
+      - "/dev/bus/usb:/dev/bus/usb"
     # `expose:` is informational only on the default Compose bridge network and
     # balena-cli strips it from the composition at push time. Kept commented as
     # documentation of which ports each service makes available to peers.
@@ -122,7 +122,7 @@ services:
       - DUMP978_DEVICE=00000978
       - DUMP978_ENABLED=false
     devices:
-      - "/dev/bus/usb"
+      - "/dev/bus/usb:/dev/bus/usb"
     # expose: kept for docs, see dump1090-fa note
     # expose:
     #   - "30978"
