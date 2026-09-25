@@ -457,10 +457,13 @@ services:
     build: ./dump1090-exporter
     image: dump1090-exporter
     restart: unless-stopped
+    ports:
+      - "9105:9105"
     environment:
       - DUMP1090_RESOURCE_PATH=/run/dump1090-fa
       - DUMP1090_EXPORTER_PORT=9105
       - DUMP1090_EXPORTER_LOG_LEVEL=info
+      - ENABLED_SERVICES=tailscale,ident,dump1090-exporter
     volumes:
       - 'aircraft-data:/run/dump1090-fa:ro'
     labels:

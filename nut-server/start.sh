@@ -18,7 +18,7 @@ cat > /etc/nut/nut.conf <<EOF
 MODE=standalone
 EOF
 
-# ups.conf - defines the UPS section for the driver to use.
+# ups.conf - defines the UPS section(s) for the driver to use.
 #
 # user = root: the usbhid-ups driver setuid()s to the "nut" system user by
 # default before opening the USB device. Linux drops ALL capabilities
@@ -29,13 +29,35 @@ EOF
 # permissions on everything". Telling the driver to stay root avoids the
 # setuid entirely; upsd (the network-facing daemon) still drops to "nut"
 # separately and is unaffected by this setting.
+#
+# For multiple devices with same vendor:product ID, serial matching may require
+# explicit port specification. If port=auto doesn't differentiate devices by serial,
+# use port=0, port=1, etc to specify device order on the bus.
 cat > /etc/nut/ups.conf <<EOF
 [${NUT_UPS_NAME}]
 	driver = ${NUT_UPS_DRIVER}
-	port = ${NUT_UPS_PORT}
+	port = ${NUT_UPS_PORT:-auto}
 	desc = "CyberPower UPS"
 	user = root
+	$(if [[ -n "${NUT_UPS_SERIAL:-}" ]]; then echo "serial = ${NUT_UPS_SERIAL}"; fi)
+	$(if [[ -n "${NUT_UPS_VENDORID:-}" ]]; then echo "vendorid = ${NUT_UPS_VENDORID}"; fi)
+	$(if [[ -n "${NUT_UPS_PRODUCTID:-}" ]]; then echo "productid = ${NUT_UPS_PRODUCTID}"; fi)
 EOF
+
+# Optional second UPS if env vars are provided
+if [[ -n "${NUT_UPS2_NAME:-}" ]]; then
+	cat >> /etc/nut/ups.conf <<EOF
+
+[${NUT_UPS2_NAME}]
+	driver = ${NUT_UPS2_DRIVER:-${NUT_UPS_DRIVER}}
+	port = ${NUT_UPS2_PORT:-auto}
+	desc = "CyberPower UPS 2"
+	user = root
+	$(if [[ -n "${NUT_UPS2_SERIAL:-}" ]]; then echo "serial = ${NUT_UPS2_SERIAL}"; fi)
+	$(if [[ -n "${NUT_UPS2_VENDORID:-}" ]]; then echo "vendorid = ${NUT_UPS2_VENDORID}"; fi)
+	$(if [[ -n "${NUT_UPS2_PRODUCTID:-}" ]]; then echo "productid = ${NUT_UPS2_PRODUCTID}"; fi)
+EOF
+fi
 
 # upsd.conf - listen on all interfaces so other containers/hosts can query
 cat > /etc/nut/upsd.conf <<EOF
@@ -59,6 +81,13 @@ chown root:nut /etc/nut/upsd.users /etc/nut/ups.conf 2>/dev/null || true
 
 echo "Starting UPS driver (${NUT_UPS_DRIVER}) for ${NUT_UPS_NAME}..."
 /lib/nut/${NUT_UPS_DRIVER} -a "${NUT_UPS_NAME}" || echo "Driver start returned non-zero — will retry via upsdrvctl"
+
+# Optional second driver instance if configured
+if [[ -n "${NUT_UPS2_NAME:-}" ]]; then
+	echo "Starting second UPS driver (${NUT_UPS2_DRIVER:-${NUT_UPS_DRIVER}}) for ${NUT_UPS2_NAME}..."
+	/lib/nut/${NUT_UPS2_DRIVER:-${NUT_UPS_DRIVER}} -a "${NUT_UPS2_NAME}" || echo "Second driver start returned non-zero — will retry via upsdrvctl"
+fi
+
 /sbin/upsdrvctl start || true
 
 # -u root: the driver (above) runs as root so it can open the raw USB HID
