@@ -241,11 +241,11 @@ then
 	echo "PlaneTrack disabled, skipping."
  else
 	echo "PlaneTrack service enabled."
- 	adsb="true"
-  	mlat="true"
+	adsb="true"
+	mlat="true"
 	ADSB_NET_CONNECTOR+=("--net-connector=feed.planetrack.ai,30004,beast_reduce_plus_out")
-     	MLAT_SERVER+=("--server=feed.planetrack.ai:31090")
-      	# MLAT_SERVER+=("--results beast,listen,39008")
+	MLAT_SERVER+=("--server=feed.planetrack.ai:31090")
+	# MLAT_SERVER+=("--results beast,listen,39008")
 fi
 
 # End defining all the required configuration variables.
